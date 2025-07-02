@@ -5,7 +5,7 @@ const router = express.Router();
 
 //Defining and using routes directly
 
-router.get('/', async (req, res) => {
+router.get('/projects', async (req, res) => {
     try {
         const getProject = await Project.find();
         res.status(200).json(getProject)
@@ -14,7 +14,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.post('/', async (req, res) => {
+router.post('/add', async (req, res) => {
     try {
         const newProject = await Project.create(req.body);
         res.status(201).json(newProject);
@@ -23,7 +23,7 @@ router.post('/', async (req, res) => {
     }
 });
 
-router.get('/:id', async(req, res) => {
+router.get('/project/:id', async(req, res) => {
     try {
         const findProject = await Project.findById(req.params.id);
         if (!findProject){
@@ -35,7 +35,7 @@ router.get('/:id', async(req, res) => {
     }
 });
 
-router.put('/:id', async(req, res) => {
+router.put('/project/:id', async(req, res) => {
     try {
         const {title, description, technologies, githubLink} = req.body;
         const editedProject = await Project.findByIdAndUpdate(req.params.id, req.body, {new:true});
@@ -45,7 +45,7 @@ router.put('/:id', async(req, res) => {
     }
 });
 
-router.delete('/:id', async(req, res) => {
+router.delete('/project/:id', async(req, res) => {
     try {
         const deletedProject = await Project.findByIdAndDelete(req.params.id);
         res.status(200).json({message: 'Project Has been Successfully Deleted!'});

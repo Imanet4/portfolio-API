@@ -1,0 +1,13 @@
+.navbar {
+  background-color: white !important;
+  padding: 20px 0;
+}
+.navbar .logo {
+  font-size: 36px;
+  font-weight: bold;
+}
+.navbar .social-icons a {
+  color: black;
+  margin-left: 15px;
+  font-size: 18px;
+}

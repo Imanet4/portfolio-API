@@ -5,6 +5,8 @@ const router = express.Router();
 
 //Defining and using routes directly
 
+
+//Get Akk sckills
 router.get('/', async (req, res) => {
     try {
         const getSkill = await Skill.find();
@@ -14,7 +16,9 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.post('/', async (req, res) => {
+
+//Add a new skill
+router.post('/add', async (req, res) => {
     try {
         const newSkill = await Skill.create(req.body);
         res.status(201).json(newSkill);
@@ -23,6 +27,8 @@ router.post('/', async (req, res) => {
     }
 });
 
+
+//Get a skill by ID
 router.get('/:id', async(req, res) => {
     try {
         const findSkill = await Skill.findById(req.params.id);
