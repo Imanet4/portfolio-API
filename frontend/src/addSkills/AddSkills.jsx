@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 const AddSkills = () => {
     const [name, setName] = useState('');
     const [level, setLevel] = useState('');
+    
     const navigate = useNavigate();
 
 
@@ -26,7 +27,9 @@ const AddSkills = () => {
         } catch (error) {
             console.error('Error adding skill:', error);
         }
-    }
+
+       
+    };
 
 
 return(

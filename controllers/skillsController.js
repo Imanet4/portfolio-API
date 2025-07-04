@@ -41,7 +41,7 @@ router.get('/:id', async(req, res) => {
     }
 });
 
-router.put('/:id', async(req, res) => {
+router.put('/edit/:id', async(req, res) => {
     try {
         const {name, level} = req.body;
         const editedSkill = await Skill.findByIdAndUpdate(req.params.id, req.body, {new:true});
@@ -51,7 +51,7 @@ router.put('/:id', async(req, res) => {
     }
 });
 
-router.delete('/:id', async(req, res) => {
+router.delete('/delete/:id', async(req, res) => {
     try {
         const deletedSkill = await Skill.findByIdAndDelete(req.params.id);
         res.status(200).json({message: 'Skill Has been Successfully Deleted!'});

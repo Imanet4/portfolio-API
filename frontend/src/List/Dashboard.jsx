@@ -1,138 +1,244 @@
-import React, { useState, useEffect} from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css'; // Ensure Bootstrap styles are applied
+import React, { useState, useEffect } from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
     const [projects, setProjects] = useState([]);
+    const [skills, setSkills] = useState([]);
     const [editedProject, setEditedProject] = useState(null);
+    const [editedSkill, setEditedSkill] = useState(null);
 
-    //Fetching Projects
+    // Fetch Projects and Skills on component mount
     useEffect(() => {
-        const fetchProjects = async () => {
+        const fetchData = async () => {
             try {
-                const response = await axios.get('http://localhost:4000/Project/projects');
-                setProjects(response.data);
-                console.log(response.data);
+                const [projectsRes, skillsRes] = await Promise.all([
+                    axios.get('http://localhost:4000/Project/projects'),
+                    axios.get('http://localhost:4000/Skill')
+                ]);
+                setProjects(projectsRes.data);
+                setSkills(skillsRes.data);
             } catch (error) {
-                console.error('Error fetching projects:', error);
+                console.error('Error fetching data:', error);
             }
         };
 
-        fetchProjects();
+        fetchData();
     }, []);
 
-    //DELETE PROJECT
-    const handleDelete = async (id) => {
-      console.log('Trying to delete project with ID:', id);
+    // Project Handlers
+    const handleDeleteProject = async (id) => {
         try {
             await axios.delete(`http://localhost:4000/Project/project/${id}`);
-            setProjects(projects.filter(project => project._id !== id));
-            console.log('Project deleted successfully');
+            setProjects(prev => prev.filter(project => project._id !== id));
         } catch (error) {
             console.error('Error deleting project:', error);
         }
     };
 
-    //EDIT PROJECT
- 
-    const handleUpdate = async (e) => {
+    const handleUpdateProject = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.put(`http://localhost:4000/Project/project/${editedProject._id}`, editedProject);
-            console.log('Project updated:', response.data);
-            setEditedProject(null); // Reset the edited project state
+            const response = await axios.put(
+                `http://localhost:4000/Project/project/${editedProject._id}`,
+                editedProject
+            );
+            setProjects(prev => prev.map(p => 
+                p._id === editedProject._id ? response.data : p
+            ));
+            setEditedProject(null);
         } catch (error) {
             console.error('Error updating project:', error);
         }
     };
 
+    // Skill Handlers
+    const handleDeleteSkill = async (id) => {
+        try {
+            await axios.delete(`http://localhost:4000/Skill/delete/${id}`);
+            setSkills(prev => prev.filter(skill => skill._id !== id));
+        } catch (error) {
+            console.error('Error deleting skill:', error);
+        }
+    };
 
+    const handleUpdateSkill = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await axios.put(
+                `http://localhost:4000/Skill/edit/${editedSkill._id}`,
+                editedSkill
+            );
+            setSkills(prev => prev.map(s => 
+                s._id === editedSkill._id ? response.data : s
+            ));
+            setEditedSkill(null);
+        } catch (error) {
+            console.error('Error updating skill:', error);
+        }
+    };
 
-
-
-
-  return (
-       <div className="container mt-4">
-      <h1>Admin Dashboard</h1>
-      <Link to="/Dashboard/add" className="btn btn-outline-primary mb-4">
-        Add New Project
-      </Link>
-      <Link to="/Dashboard/about/add" className="btn btn-outline-primary mb-4 ms-4">
-        Add ABOUT ME
-      </Link>
-      <Link to="/Dashboard/skills/add" className="btn btn-outline-primary mb-4 ms-4">
-        Add Your SKILLS
-      </Link>
-
-      <div className="row">
-        {projects.map(project => (
-          <div key={project._id} className="col-md-4 mb-4">
-            <div className="card">
-              <div className="card-body">
-                {editedProject?._id === project._id ? (
-                  // 👇 Edit Form (when editing)
-                  <form onSubmit={handleUpdate}>
-                    <input
-                      className="form-control mb-2"
-                      value={editedProject.title}
-                      onChange={(e) => setEditedProject({...editedProject, title: e.target.value})}
-                    />
-                    <textarea
-                      className="form-control mb-2"
-                      value={editedProject.description}
-                      onChange={(e) => setEditedProject({...editedProject, description: e.target.value})}
-                    />
-                    <input
-                      className="form-control mb-2"
-                      value={editedProject.technologies}
-                      onChange={(e) => setEditedProject({...editedProject, technologies: e.target.value})}
-                    />
-                    <input
-                      className="form-control mb-2"
-                      value={editedProject.githubLink}
-                      onChange={(e) => setEditedProject({...editedProject, githubLink: e.target.value})}
-                    />
-                    <button type="submit" className="btn btn-success me-2">Save</button>
-                    <button 
-                      type="button" 
-                      className="btn btn-secondary"
-                      onClick={() => setEditedProject(null)}
-                    >
-                      Cancel
-                    </button>
-                  </form>
-                ) : (
-                  // 👇 Project Card (normal view)
-                  <>
-                    <h5>{project.title}</h5>
-                    <p>{project.description}</p>
-                    <p><strong>Tech:</strong> {project.technologies}</p>
-                    <a href={project.githubLink} target="_blank" rel="noreferrer">GitHub</a>
-                    <div className="mt-3">
-                      <button 
-                        className="btn btn-warning me-2"
-                        onClick={() => setEditedProject(project)}
-                      >
-                        Edit
-                      </button>
-                      <button 
-                        className="btn btn-danger"
-                        onClick={() => handleDelete(project._id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
+    return (
+        <div className="container mt-4">
+            <h1 className="mb-4">Admin Dashboard</h1>
+            
+            {/* Action Buttons */}
+            <div className="mb-4">
+                <Link to="/Dashboard/add" className="btn btn-outline-primary me-2">
+                    Add New Project
+                </Link>
+                <Link to="/Dashboard/about/add" className="btn btn-outline-primary me-2">
+                    Add ABOUT ME
+                </Link>
+                
             </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+
+            {/* Projects Section */}
+            <section className="mb-5">
+                <h2 className="mb-3">Projects</h2>
+                <div className="row">
+                    {projects.map(project => (
+                        <div key={project._id} className="col-md-4 mb-4">
+                            <div className="card h-100">
+                                <div className="card-body">
+                                    {editedProject?._id === project._id ? (
+                                        <form onSubmit={handleUpdateProject}>
+                                            <input
+                                                className="form-control mb-2"
+                                                value={editedProject.title}
+                                                onChange={(e) => setEditedProject({...editedProject, title: e.target.value})}
+                                            />
+                                            <textarea
+                                                className="form-control mb-2"
+                                                value={editedProject.description}
+                                                onChange={(e) => setEditedProject({...editedProject, description: e.target.value})}
+                                            />
+                                            <input
+                                                className="form-control mb-2"
+                                                value={editedProject.technologies}
+                                                onChange={(e) => setEditedProject({...editedProject, technologies: e.target.value})}
+                                            />
+                                            <input
+                                                className="form-control mb-2"
+                                                value={editedProject.githubLink}
+                                                onChange={(e) => setEditedProject({...editedProject, githubLink: e.target.value})}
+                                            />
+                                            <button type="submit" className="btn btn-success me-2">Save</button>
+                                            <button 
+                                                type="button" 
+                                                className="btn btn-secondary"
+                                                onClick={() => setEditedProject(null)}
+                                            >
+                                                Cancel
+                                            </button>
+                                        </form>
+                                    ) : (
+                                        <>
+                                            <h5>{project.title}</h5>
+                                            <p className="text-muted">{project.description}</p>
+                                            <p><strong>Technologies:</strong> {project.technologies}</p>
+                                            <a href={project.githubLink} target="_blank" rel="noreferrer" className="d-block mb-3">
+                                                GitHub Repository
+                                            </a>
+                                            <div className="d-flex">
+                                                <button 
+                                                    className="btn btn-warning me-2"
+                                                    onClick={() => setEditedProject(project)}
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button 
+                                                    className="btn btn-danger"
+                                                    onClick={() => handleDeleteProject(project._id)}
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            <Link to="/Dashboard/skills/add" className="btn btn-outline-primary mb-4">
+                    Add Your SKILLS
+                </Link>
+
+            {/* Skills Section */}
+            <section>
+                <h2 className="mb-3">Skills</h2>
+                <div className="row">
+                    {skills.map(skill => (
+                        <div key={skill._id} className="col-md-3 mb-4">
+                            <div className="card h-100">
+                                <div className="card-body">
+                                    {editedSkill?._id === skill._id ? (
+                                        <form onSubmit={handleUpdateSkill}>
+                                            <input
+                                                className="form-control mb-2"
+                                                value={editedSkill.name}
+                                                onChange={(e) => setEditedSkill({...editedSkill, name: e.target.value})}
+                                            />
+                                            <input
+                                                type="number"
+                                                className="form-control mb-2"
+                                                value={editedSkill.level}
+                                                onChange={(e) => setEditedSkill({...editedSkill, level: e.target.value})}
+                                                min="0"
+                                                max="100"
+                                            />
+                                            <button type="submit" className="btn btn-success me-2">Save</button>
+                                            <button 
+                                                type="button" 
+                                                className="btn btn-secondary"
+                                                onClick={() => setEditedSkill(null)}
+                                            >
+                                                Cancel
+                                            </button>
+                                        </form>
+                                    ) : (
+                                        <>
+                                            <h5>{skill.name}</h5>
+                                            <div className="progress mb-3">
+                                                <div 
+                                                    className="progress-bar" 
+                                                    role="progressbar" 
+                                                    style={{width: `${skill.level}%`}}
+                                                    aria-valuenow={skill.level}
+                                                    aria-valuemin="0"
+                                                    aria-valuemax="100"
+                                                >
+                                                    {skill.level}%
+                                                </div>
+                                            </div>
+                                            <div className="d-flex">
+                                                <button 
+                                                    className="btn btn-warning me-2"
+                                                    onClick={() => setEditedSkill(skill)}
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button 
+                                                    className="btn btn-danger"
+                                                    onClick={() => handleDeleteSkill(skill._id)}
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </section>
+        </div>
+    );
 };
-  
 
 export default Dashboard;
